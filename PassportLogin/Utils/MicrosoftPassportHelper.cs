@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
+using PassportLogin.Models;
 using Windows.Security.Credentials;
+using Windows.Security.Credentials.UI;
 
 namespace PassportLogin.Utils
 {
@@ -35,12 +38,17 @@ namespace PassportLogin.Utils
         /// <returns>Boolean representing if creating the Passport key succeeded</returns>
         public static async Task<bool> CreatePassportKeyAsync(string accountId)
         {
+
             KeyCredentialRetrievalResult keyCreationResult = await KeyCredentialManager.RequestCreateAsync(accountId, KeyCredentialCreationOption.ReplaceExisting);
 
             switch (keyCreationResult.Status)
             {
                 case KeyCredentialStatus.Success:
                     Debug.WriteLine("Successfully made key");
+
+                    var vault = new Windows.Security.Credentials.PasswordVault();
+                    vault.Add(new Windows.Security.Credentials.PasswordCredential(
+                        "GoodPass", "sampleUsername", "TestPasswords"));
 
                     // In the real world authentication would take place on a server.
                     // So every time a user migrates or creates a new Microsoft Passport account Passport details should be pushed to the server.
@@ -51,6 +59,15 @@ namespace PassportLogin.Utils
                     // keyAttestationCanBeRetrievedLater and keyAttestationRetryType
                     // As this sample has no concept of a server it will be skipped for now
                     // for information on how to do this refer to the second Passport sample
+
+                    //Test 重新登录
+                    var openKeyResult = await KeyCredentialManager.OpenAsync(accountId);
+                    /*UserConsentVerificationResult consentResult = await UserConsentVerifier.RequestVerificationAsync("登录到GoodPass");
+                    if (consentResult.Equals(UserConsentVerificationResult.Verified))
+                    {
+                        Debug.WriteLine("Sign in successfully!");
+                        
+                    }*/
 
                     //For this sample just return true
                     return true;
